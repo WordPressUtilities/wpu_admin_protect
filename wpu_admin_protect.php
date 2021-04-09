@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Admin Protect
 Description: Restrictive options for WordPress admin
-Version: 1.6.1
+Version: 1.7.0
 Author: Darklg
 Author URI: https://darklg.me/
 License: MIT License
@@ -23,7 +23,7 @@ if (file_exists(ABSPATH . '/.disable_wpu_admin_protect')) {
   Levels
 ---------------------------------------------------------- */
 
-define('WPUTH_ADMIN_PLUGIN_VERSION', '1.6.1');
+define('WPUTH_ADMIN_PLUGIN_VERSION', '1.7.0');
 define('WPUTH_ADMIN_PLUGIN_NAME', 'WPU Admin Protect');
 define('WPUTH_ADMIN_PLUGIN_OPT', 'wpu_admin_protect__v');
 define('WPUTH_ADMIN_MIN_LVL', 'manage_categories');
@@ -200,8 +200,10 @@ function wputh_admin_protect_rewrite_rules($rules) {
         '\.phar$',
         '\.po$',
         '\.rb$',
+        '\.scss$',
         '\.sh$',
         '\.sql$',
+        '\.ts$',
         /* git */
         '^.git',
         '^.gitignore',
@@ -211,6 +213,7 @@ function wputh_admin_protect_rewrite_rules($rules) {
         'Gruntfile\.js',
         'cypress\.json$',
         'composer\.json$',
+        'package\.json$',
         'composer\.lock$',
         'config\.yml$',
         'phpunit\.xml$',
@@ -228,6 +231,11 @@ function wputh_admin_protect_rewrite_rules($rules) {
         /* WordPress files */
         '^(wp-blog-header|wp-config|wp-config-sample|wp-load|wp-settings)\.php'
     );
+
+    if (function_exists('wputh_disable_comments_css') || function_exists('wputh_disable_comments_support')) {
+        $excluded_files[] = 'wp-comments-post.php';
+        $excluded_files[] = 'wp-trackback.php';
+    }
 
     $excluded_files = apply_filters('wputh_admin_protect_rewrite_rules__excluded_files', $excluded_files);
 
