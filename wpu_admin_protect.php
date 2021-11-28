@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Admin Protect
 Description: Restrictive options for WordPress admin
-Version: 1.7.2
+Version: 1.7.3
 Author: Darklg
 Author URI: https://darklg.me/
 License: MIT License
@@ -14,8 +14,10 @@ if (!defined('ABSPATH')) {
     exit();
 }
 
-if (file_exists(ABSPATH . '/.disable_wpu_admin_protect') && !file_exists(ABSPATH . '/.maintenance')) {
-    error_log('WPU Admin Protect is disabled');
+if (file_exists(ABSPATH . '/.disable_wpu_admin_protect')) {
+    if(!file_exists(ABSPATH . '/.maintenance')){
+        error_log('WPU Admin Protect is disabled');
+    }
     return;
 }
 
