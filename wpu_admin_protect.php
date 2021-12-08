@@ -2,8 +2,9 @@
 
 /*
 Plugin Name: WPU Admin Protect
+Plugin URI: https://github.com/WordPressUtilities/wpu_admin_protect
 Description: Restrictive options for WordPress admin
-Version: 1.7.3
+Version: 1.8.0
 Author: Darklg
 Author URI: https://darklg.me/
 License: MIT License
@@ -15,7 +16,7 @@ if (!defined('ABSPATH')) {
 }
 
 if (file_exists(ABSPATH . '/.disable_wpu_admin_protect')) {
-    if(!file_exists(ABSPATH . '/.maintenance')){
+    if (!file_exists(ABSPATH . '/.maintenance')) {
         error_log('WPU Admin Protect is disabled');
     }
     return;
@@ -198,6 +199,9 @@ function wputh_admin_protect_rewrite_rules($rules) {
         '\.crt$',
         '\.log$',
         '\.mo$',
+        '\.bak$',
+        '\.bak\.php$',
+        '\.lock$',
         '\.pem$',
         '\.phar$',
         '\.po$',
@@ -215,7 +219,9 @@ function wputh_admin_protect_rewrite_rules($rules) {
         'Gruntfile\.js',
         'cypress\.json$',
         'composer\.json$',
+        'docker-compose\.yml$',
         'package\.json$',
+        'package-lock\.json$',
         'phpstan\.neon$',
         'composer\.lock$',
         'config\.yml$',
@@ -271,9 +277,11 @@ RewriteRule ^wp-includes/theme-compat/ - [F,L]
 </IfModule>
 # - Avoid access to PHP files in plugins
 <IfModule mod_rewrite.c>
+RewriteRule wp-content/([^/\.]*\.php)$ - [R=404,L]
 RewriteRule wp-content/themes/(.*\.php)$ - [R=404,L]
 RewriteRule wp-content/plugins/(.*\.php)$ - [R=404,L]
 RewriteRule wp-content/mu-plugins/(.*\.php)$ - [R=404,L]
+RewriteRule wp-content/uploads/(.*\.php)$ - [R=404,L]
 </IfModule>
 # - Disallow PHP Easter Egg
 RewriteCond %{QUERY_STRING} \=PHP[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12} [NC]
@@ -288,6 +296,18 @@ Header always set X-Content-Type-Options \"nosniff\"
 Header always set X-XSS-Protection \"1; mode=block\"
 </IfModule>
 </IfModule>";
+
+if (!apply_filters('wputh_admin_protect_disallow_subfolder_admin', false)) {
+    $wpuadminrules .= "
+# Prevent admin in subfolder
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteBase /
+RewriteRule ^[^/]+/wp-admin/ - [F,L]
+</IfModule>
+# End Prevent\n
+";
+}
 
 if (!apply_filters('wputh_admin_protect_disallow_xframe_options', false)) {
     $wpuadminrules .= "
