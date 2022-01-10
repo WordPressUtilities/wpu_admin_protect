@@ -4,7 +4,7 @@
 Plugin Name: WPU Admin Protect
 Plugin URI: https://github.com/WordPressUtilities/wpu_admin_protect
 Description: Restrictive options for WordPress admin
-Version: 1.8.0
+Version: 1.8.1
 Author: Darklg
 Author URI: https://darklg.me/
 License: MIT License
@@ -258,6 +258,8 @@ RewriteRule ^(.*)$ /index.php [F,L]
 # - Stop WordPress username enumeration vulnerability
 RewriteCond %{QUERY_STRING} author=d
 RewriteRule ^ /? [L,R=301]
+# - Prevent access to some subdirectories
+RewriteRule ^.git - [F]
 # - Disable directory browsing
 Options All -Indexes
 IndexIgnore *
