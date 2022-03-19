@@ -4,7 +4,7 @@
 Plugin Name: WPU Admin Protect
 Plugin URI: https://github.com/WordPressUtilities/wpu_admin_protect
 Description: Restrictive options for WordPress admin
-Version: 1.8.2
+Version: 2.0.0
 Author: Darklg
 Author URI: https://darklg.me/
 License: MIT License
@@ -193,6 +193,61 @@ function wputh_admin_protect__remove_ver($src) {
 add_filter('mod_rewrite_rules', 'wputh_admin_protect_rewrite_rules', 10, 1);
 function wputh_admin_protect_rewrite_rules($rules) {
 
+    $excluded_directories = array(
+        '.aws/',
+        '__Additional/',
+        '_ignition/',
+        '_profiler/',
+        'actuator/',
+        'administrator/',
+        'api/',
+        'app/',
+        'application/',
+        'auth/',
+        'backend/',
+        'backup/',
+        'boaform/',
+        'cli/',
+        'config/',
+        'db/',
+        'dbadmin/',
+        'debug/',
+        'dependencies/',
+        'dev/',
+        'developer/',
+        'development/',
+        'docker/',
+        'filemanager/',
+        'framework/',
+        'HNAP1/',
+        'jenkins/',
+        'laravel/',
+        'lib/',
+        'local/',
+        'login/',
+        'myadmin/',
+        'MyAdmin/',
+        'mysql-admin',
+        'mysqladmin',
+        'nagios/',
+        'opt/',
+        'owa/',
+        'phpinfo',
+        'phpmy-admin',
+        'phpmy/',
+        'phpMyAdmin',
+        'phpmyadmin',
+        'phpunit/',
+        'query',
+        'resolve',
+        'sdk',
+        'server-status',
+        'shell/',
+        'sql',
+        'vendor/',
+        'wp-backup',
+    );
+
     $excluded_files = array(
         /* Extensions */
         '\.bak$',
@@ -211,11 +266,14 @@ function wputh_admin_protect_rewrite_rules($rules) {
         '\.sh$',
         '\.sql$',
         '\.ts$',
+        '\.env$',
+        '^.env',
         /* git */
         '^.git',
         '^.gitignore',
         '^.gitmodules',
         /* Project */
+        'aws\.yml',
         'gulpfile\.js',
         'Gruntfile\.js',
         'cypress\.json$',
@@ -237,6 +295,17 @@ function wputh_admin_protect_rewrite_rules($rules) {
         'README\.md$',
         'readme\.txt$',
         /* WordPress attacks */
+        'admin\.php$',
+        'config\.php$',
+        'error\.php$',
+        'info\.php$',
+        'infophp\.php$',
+        'old_phpinfo\.php$',
+        'phpinfo\.php$',
+        'phpversion\.php$',
+        'pinfo\.php$',
+        's_ne\.php$',
+        'system\.php$',
         'timthumb\.php$',
         /* WordPress files */
         '^(wp-blog-header|wp-config|wp-config-sample|wp-load|wp-settings)\.php'
@@ -255,7 +324,7 @@ RewriteEngine On
 RewriteCond %{QUERY_STRING} (\<|%3C).*script.*(\>|%3E) [NC,OR]
 RewriteCond %{QUERY_STRING} GLOBALS(=|\[|\%[0-9A-Z]{0,2}) [OR]
 RewriteCond %{QUERY_STRING} _REQUEST(=|\[|\%[0-9A-Z]{0,2})
-RewriteRule ^(.*)$ /index.php [F,L]
+RewriteRule ^(.*)$ /index.php [R=404,L]
 # - Stop WordPress username enumeration vulnerability
 RewriteCond %{QUERY_STRING} author=d
 RewriteRule ^ /? [L,R=301]
@@ -264,20 +333,32 @@ RewriteRule ^.git - [F]
 # - Disable directory browsing
 Options All -Indexes
 IndexIgnore *
+</IfModule>";
+
+    $wpuadminrules .= "
+<IfModule mod_rewrite.c>
 # - Protect files
 <FilesMatch (" . implode('|', $excluded_files) . ")>
 Deny from all
-</FilesMatch>
+</FilesMatch>";
+    foreach ($excluded_directories as $excluded_dir) {
+        $wpuadminrules .= "\nRewriteRule ^" . $excluded_dir . " - [R=404,L]";
+    }
+    $wpuadminrules .= "
+</IfModule>";
+
+    $wpuadminrules .= "
 # - Block the include-only files ( cf WP.org )
 <IfModule mod_rewrite.c>
 RewriteEngine On
 RewriteBase /
-RewriteRule ^wp-admin/includes/ - [F,L]
+RewriteRule ^wp-admin/includes/ - [R=404,L]
 RewriteRule !^wp-includes/ - [S=3]
-RewriteRule ^wp-includes/[^/]+\.php$ - [F,L]
-RewriteRule ^wp-includes/js/tinymce/langs/.+\.php - [F,L]
-RewriteRule ^wp-includes/theme-compat/ - [F,L]
-</IfModule>
+RewriteRule ^wp-includes/[^/]+\.php$ - [R=404,L]
+RewriteRule ^wp-includes/js/tinymce/langs/.+\.php - [R=404,L]
+RewriteRule ^wp-includes/theme-compat/ - [R=404,L]
+</IfModule>";
+    $wpuadminrules .= "
 # - Avoid access to PHP files in plugins
 <IfModule mod_rewrite.c>
 RewriteRule wp-content/([^/\.]*\.php)$ - [R=404,L]
@@ -285,10 +366,15 @@ RewriteRule wp-content/themes/(.*\.php)$ - [R=404,L]
 RewriteRule wp-content/plugins/(.*\.php)$ - [R=404,L]
 RewriteRule wp-content/mu-plugins/(.*\.php)$ - [R=404,L]
 RewriteRule wp-content/uploads/(.*\.php)$ - [R=404,L]
-</IfModule>
+</IfModule>";
+    $wpuadminrules .= "
+# - Avoid access to PHP files in plugins
+<IfModule mod_rewrite.c>
 # - Disallow PHP Easter Egg
 RewriteCond %{QUERY_STRING} \=PHP[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12} [NC]
 RewriteRule .* - [F,L]
+</IfModule>";
+    $wpuadminrules .= "
 <IfModule mod_headers.c>
 # - Remove Server Signature
 Header unset Server
@@ -298,29 +384,29 @@ Header always set X-Content-Type-Options \"nosniff\"
 # - Block if XSS detected
 Header always set X-XSS-Protection \"1; mode=block\"
 </IfModule>
-</IfModule>";
+";
 
-if (!apply_filters('wputh_admin_protect_disallow_subfolder_admin', false)) {
-    $wpuadminrules .= "
+    if (!apply_filters('wputh_admin_protect_disallow_subfolder_admin', false)) {
+        $wpuadminrules .= "
 # Prevent admin in subfolder
 <IfModule mod_rewrite.c>
 RewriteEngine On
 RewriteBase /
-RewriteRule ^[^/]+/wp-admin/ - [F,L]
+RewriteRule ^[^/]+/wp-admin/ - [R=404,L]
 </IfModule>
 # End Prevent\n
 ";
-}
+    }
 
-if (!apply_filters('wputh_admin_protect_disallow_xframe_options', false)) {
-    $wpuadminrules .= "
+    if (!apply_filters('wputh_admin_protect_disallow_xframe_options', false)) {
+        $wpuadminrules .= "
 # Prevent external iframe embedding
 <IfModule mod_headers.c>
 Header always set X-FRAME-OPTIONS \"SAMEORIGIN\"
 </IfModule>
 # End Prevent\n
 ";
-}
+    }
 
     $wpuadminrules = apply_filters('wputh_admin_protect_rewrite_rules__wpuadminrules', $wpuadminrules);
 
