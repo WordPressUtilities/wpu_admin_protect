@@ -4,7 +4,7 @@
 Plugin Name: WPU Admin Protect
 Plugin URI: https://github.com/WordPressUtilities/wpu_admin_protect
 Description: Restrictive options for WordPress admin
-Version: 2.0.0
+Version: 2.1.0
 Author: Darklg
 Author URI: https://darklg.me/
 License: MIT License
@@ -26,7 +26,7 @@ if (file_exists(ABSPATH . '/.disable_wpu_admin_protect')) {
   Levels
 ---------------------------------------------------------- */
 
-define('WPUTH_ADMIN_PLUGIN_VERSION', '1.8.2');
+define('WPUTH_ADMIN_PLUGIN_VERSION', '2.1.0');
 define('WPUTH_ADMIN_PLUGIN_NAME', 'WPU Admin Protect');
 define('WPUTH_ADMIN_PLUGIN_OPT', 'wpu_admin_protect__v');
 define('WPUTH_ADMIN_MIN_LVL', 'manage_categories');
@@ -202,7 +202,6 @@ function wputh_admin_protect_rewrite_rules($rules) {
         'administrator/',
         'api/',
         'app/',
-        'application/',
         'auth/',
         'backend/',
         'backup/',
@@ -215,7 +214,6 @@ function wputh_admin_protect_rewrite_rules($rules) {
         'dependencies/',
         'dev/',
         'developer/',
-        'development/',
         'docker/',
         'filemanager/',
         'framework/',
@@ -223,7 +221,6 @@ function wputh_admin_protect_rewrite_rules($rules) {
         'jenkins/',
         'laravel/',
         'lib/',
-        'local/',
         'login/',
         'myadmin/',
         'MyAdmin/',
@@ -240,52 +237,55 @@ function wputh_admin_protect_rewrite_rules($rules) {
         'phpunit/',
         'query',
         'resolve',
-        'sdk',
         'server-status',
         'shell/',
         'sql',
         'vendor/',
-        'wp-backup',
+        'wp-backup'
     );
 
+    $excluded_directories = apply_filters('wputh_admin_protect_rewrite_rules__excluded_directories', $excluded_directories);
+
+    $excluded_extensions = array(
+        'bak',
+        'bak\.php',
+        'conf',
+        'dist',
+        'crt',
+        'DS_Store',
+        'env',
+        'git',
+        'lock',
+        'log',
+        'mo',
+        'pem',
+        'phar',
+        'po',
+        'rb',
+        'scss',
+        'sh',
+        'sql',
+        'ts',
+        'yml'
+    );
+
+    $excluded_extensions = apply_filters('wputh_admin_protect_rewrite_rules__excluded_extensions', $excluded_extensions);
+
     $excluded_files = array(
-        /* Extensions */
-        '\.bak$',
-        '\.bak\.php$',
-        '\.conf$',
-        '\.crt$',
-        '\.DS_Store$',
-        '\.lock$',
-        '\.log$',
-        '\.mo$',
-        '\.pem$',
-        '\.phar$',
-        '\.po$',
-        '\.rb$',
-        '\.scss$',
-        '\.sh$',
-        '\.sql$',
-        '\.ts$',
-        '\.env$',
-        '^.env',
         /* git */
         '^.git',
         '^.gitignore',
         '^.gitmodules',
         /* Project */
-        'aws\.yml',
         'gulpfile\.js',
         'Gruntfile\.js',
         'cypress\.json$',
         'composer\.json$',
-        'docker-compose\.yml$',
         'package\.json$',
         'package-lock\.json$',
         'phpstan\.neon$',
         'composer\.lock$',
-        'config\.yml$',
         'phpunit\.xml$',
-        '\.travis\.yml$',
         /* Infos */
         'changelog\.txt$',
         'license\.html$',
@@ -295,10 +295,10 @@ function wputh_admin_protect_rewrite_rules($rules) {
         'README\.md$',
         'readme\.txt$',
         /* WordPress attacks */
-        'admin\.php$',
-        'config\.php$',
-        'error\.php$',
-        'info\.php$',
+        '/admin\.php$',
+        '/config\.php$',
+        '/error\.php$',
+        '/info\.php$',
         'infophp\.php$',
         'old_phpinfo\.php$',
         'phpinfo\.php$',
@@ -335,8 +335,11 @@ Options All -Indexes
 IndexIgnore *
 </IfModule>";
 
+
     $wpuadminrules .= "
 <IfModule mod_rewrite.c>
+# - Protect extensions
+RewriteRule ^.*\.(" . implode('|', $excluded_extensions) . ")$ - [F,L,NC]
 # - Protect files
 <FilesMatch (" . implode('|', $excluded_files) . ")>
 Deny from all
