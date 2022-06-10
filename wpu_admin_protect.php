@@ -4,7 +4,7 @@
 Plugin Name: WPU Admin Protect
 Plugin URI: https://github.com/WordPressUtilities/wpu_admin_protect
 Description: Restrictive options for WordPress admin
-Version: 2.1.1
+Version: 2.1.2
 Author: Darklg
 Author URI: https://darklg.me/
 License: MIT License
@@ -26,7 +26,7 @@ if (file_exists(ABSPATH . '/.disable_wpu_admin_protect')) {
   Levels
 ---------------------------------------------------------- */
 
-define('WPUTH_ADMIN_PLUGIN_VERSION', '2.1.1');
+define('WPUTH_ADMIN_PLUGIN_VERSION', '2.1.2');
 define('WPUTH_ADMIN_PLUGIN_NAME', 'WPU Admin Protect');
 define('WPUTH_ADMIN_PLUGIN_OPT', 'wpu_admin_protect__v');
 define('WPUTH_ADMIN_MIN_LVL', 'manage_categories');
@@ -46,6 +46,9 @@ class WPUTHAdminProtectBlockAdmin {
     }
 
     public function init() {
+        if (!get_site_url()) {
+            return;
+        }
 
         $this->level_access_min_admin_access = apply_filters('wputh_admin_protect_block_admin__level_access_min_admin_access', WPUTH_ADMIN_MIN_LVL);
         $this->level_access_can_update = apply_filters('wputh_admin_protect_block_admin__level_access_can_update', WPUTH_ADMIN_MAX_LVL);
@@ -507,6 +510,9 @@ function wputh_admin_protect_invalidusername() {
 
 add_action('init', 'wputh_admin_init');
 function wputh_admin_init() {
+    if (!get_site_url()) {
+        return;
+    }
     $ver = get_option(WPUTH_ADMIN_PLUGIN_OPT);
     if ($ver != WPUTH_ADMIN_PLUGIN_VERSION) {
         flush_rewrite_rules(true);
