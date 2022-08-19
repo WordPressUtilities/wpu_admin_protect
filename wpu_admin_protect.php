@@ -4,7 +4,7 @@
 Plugin Name: WPU Admin Protect
 Plugin URI: https://github.com/WordPressUtilities/wpu_admin_protect
 Description: Restrictive options for WordPress admin
-Version: 2.1.3
+Version: 2.1.4
 Author: Darklg
 Author URI: https://darklg.me/
 License: MIT License
@@ -181,6 +181,9 @@ function wputh_admin_protect_remove_versions() {
 // remove wp version param from any enqueued scripts
 function wputh_admin_protect__remove_ver($src) {
     $ver = get_bloginfo('version');
+    if (!defined('NONCE_SALT')) {
+        define('NONCE_SALT', __FILE__);
+    }
     $new_ver = substr(md5(NONCE_SALT . $ver), 0, 6);
     if (strpos($src, 'ver=' . $ver)) {
         $src = remove_query_arg('ver', $src);
@@ -340,7 +343,6 @@ RewriteRule ^.git - [F]
 Options All -Indexes
 IndexIgnore *
 </IfModule>";
-
 
     $wpuadminrules .= "
 <IfModule mod_rewrite.c>
