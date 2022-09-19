@@ -4,7 +4,7 @@
 Plugin Name: WPU Admin Protect
 Plugin URI: https://github.com/WordPressUtilities/wpu_admin_protect
 Description: Restrictive options for WordPress admin
-Version: 2.1.4
+Version: 2.2.0
 Author: Darklg
 Author URI: https://darklg.me/
 License: MIT License
@@ -26,7 +26,7 @@ if (file_exists(ABSPATH . '/.disable_wpu_admin_protect')) {
   Levels
 ---------------------------------------------------------- */
 
-define('WPUTH_ADMIN_PLUGIN_VERSION', '2.1.3');
+define('WPUTH_ADMIN_PLUGIN_VERSION', '2.2.0');
 define('WPUTH_ADMIN_PLUGIN_NAME', 'WPU Admin Protect');
 define('WPUTH_ADMIN_PLUGIN_OPT', 'wpu_admin_protect__v');
 define('WPUTH_ADMIN_MIN_LVL', 'manage_categories');
@@ -269,6 +269,7 @@ function wputh_admin_protect_rewrite_rules($rules) {
         'pem',
         'phar',
         'po',
+        'pot',
         'rb',
         'scss',
         'sh',
@@ -416,6 +417,15 @@ RewriteRule ^[^/]+/wp-admin/ - [R=404,L]
 Header always set X-FRAME-OPTIONS \"SAMEORIGIN\"
 </IfModule>
 # End Prevent\n
+";
+    }
+    if (!apply_filters('wputh_admin_protect_disallow_style_css', false)) {
+        $wpuadminrules .= "
+# Avoid access to style.css file
+<IfModule mod_rewrite.c>
+RewriteRule wp-content/themes/(.*)/style.css$ - [R=404,L]
+</IfModule>
+# END Avoid access to style.css file\n
 ";
     }
 
