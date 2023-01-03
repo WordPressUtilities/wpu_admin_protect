@@ -4,7 +4,7 @@
 Plugin Name: WPU Admin Protect
 Plugin URI: https://github.com/WordPressUtilities/wpu_admin_protect
 Description: Restrictive options for WordPress admin
-Version: 2.2.1
+Version: 2.2.2
 Author: Darklg
 Author URI: https://darklg.me/
 License: MIT License
@@ -26,7 +26,7 @@ if (file_exists(ABSPATH . '/.disable_wpu_admin_protect')) {
   Levels
 ---------------------------------------------------------- */
 
-define('WPUTH_ADMIN_PLUGIN_VERSION', '2.2.1');
+define('WPUTH_ADMIN_PLUGIN_VERSION', '2.2.2');
 define('WPUTH_ADMIN_PLUGIN_NAME', 'WPU Admin Protect');
 define('WPUTH_ADMIN_PLUGIN_OPT', 'wpu_admin_protect__v');
 define('WPUTH_ADMIN_MIN_LVL', 'manage_categories');
@@ -494,17 +494,24 @@ function wputh_admin_protect_badrequests_lastchance() {
   Warn from user admin creation
 ---------------------------------------------------------- */
 
+add_filter('illegal_user_logins', function ($forbidden_usernames) {
+    $forbidden_usernames[] = 'admin';
+    $forbidden_usernames[] = 'administrator';
+    $stylesheet = get_stylesheet();
+    if ($stylesheet) {
+        $forbidden_usernames[] = $stylesheet;
+    }
+    return $forbidden_usernames;
+}, 10, 1);
+
 add_action('admin_head', 'wputh_admin_protect_invalidusername');
 function wputh_admin_protect_invalidusername() {
     $screen = get_current_screen();
     if (!is_object($screen) || $screen->base != 'user' || $screen->action != 'add') {
         return;
     }
-    $forbidden_usernames = array('admin', 'administrator');
-    $stylesheet = get_stylesheet();
-    if ($stylesheet) {
-        $forbidden_usernames[] = $stylesheet;
-    }
+
+    $forbidden_usernames = apply_filters('illegal_user_logins', array());
     echo "<script>jQuery(document).ready(function($) {
     var forbidden_usernames = " . json_encode($forbidden_usernames) . ",
         alert_message = '" . esc_attr(__('The ”%s” username is forbidden, because it is a potential security breach.', 'wputh')) . "';
