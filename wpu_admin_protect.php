@@ -4,7 +4,7 @@
 Plugin Name: WPU Admin Protect
 Plugin URI: https://github.com/WordPressUtilities/wpu_admin_protect
 Description: Restrictive options for WordPress admin
-Version: 2.2.4
+Version: 2.3.0
 Author: Darklg
 Author URI: https://darklg.me/
 License: MIT License
@@ -31,7 +31,7 @@ if (defined('DISABLE_WPU_ADMIN_PROTECT') && DISABLE_WPU_ADMIN_PROTECT) {
   Levels
 ---------------------------------------------------------- */
 
-define('WPUTH_ADMIN_PLUGIN_VERSION', '2.2.4');
+define('WPUTH_ADMIN_PLUGIN_VERSION', '2.3.0');
 define('WPUTH_ADMIN_PLUGIN_NAME', 'WPU Admin Protect');
 define('WPUTH_ADMIN_PLUGIN_OPT', 'wpu_admin_protect__v');
 define('WPUTH_ADMIN_MIN_LVL', 'manage_categories');
@@ -206,6 +206,8 @@ function wputh_admin_protect_rewrite_rules($rules) {
 
     $excluded_directories = array(
         '.aws/',
+        '.env',
+        '.vscode/',
         '__Additional/',
         '_ignition/',
         '_profiler/',
@@ -253,6 +255,27 @@ function wputh_admin_protect_rewrite_rules($rules) {
         'sql',
         'vendor/',
         'wp-backup',
+        'wp-admin/includes',
+        'wp-includes/ID3',
+        'wp-includes/IXR',
+        'wp-includes/PHPMailer',
+        'wp-includes/Requests',
+        'wp-includes/SimplePie',
+        'wp-includes/Text',
+        'wp-includes/block-patterns',
+        'wp-includes/block-supports',
+        'wp-includes/blocks',
+        'wp-includes/certificates',
+        'wp-includes/customize',
+        'wp-includes/html-api',
+        'wp-includes/php-compat',
+        'wp-includes/pomo',
+        'wp-includes/rest-api',
+        'wp-includes/sitemaps',
+        'wp-includes/sodium_compat',
+        'wp-includes/style-engine',
+        'wp-includes/theme-compat',
+        'wp-includes/widgets',
         'wp-content/w3tc-config',
         'wp-content/wp-rocket-config'
     );
