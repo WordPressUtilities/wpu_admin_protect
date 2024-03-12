@@ -3,10 +3,14 @@
 /*
 Plugin Name: WPU Admin Protect
 Plugin URI: https://github.com/WordPressUtilities/wpu_admin_protect
+Update URI: https://github.com/WordPressUtilities/wpu_admin_protect
 Description: Restrictive options for WordPress admin
-Version: 2.3.1
+Version: 2.3.2
 Author: Darklg
 Author URI: https://darklg.me/
+Text Domain: wpu_admin_protect
+Requires at least: 6.2
+Requires PHP: 8.0
 License: MIT License
 License URI: https://opensource.org/licenses/MIT
 */
@@ -154,7 +158,7 @@ if ($wputh_admin_protect_disable_update) {
   Users settings
 ---------------------------------------------------------- */
 
-/* Thanks to http://blog.secupress.fr/ajoutez-point-securite-facilement-astuce-156.html */
+/* Thanks to https://blog.secupress.fr/ajoutez-point-securite-facilement-astuce-156.html */
 
 /* Disable user registration */
 add_filter('pre_option_users_can_register', 'wputh_admin_option_users_can_register');
@@ -337,16 +341,25 @@ function wputh_admin_protect_rewrite_rules($rules) {
         '/config\.php$',
         '/error\.php$',
         '/info\.php$',
+        'admin\.php$',
+        'index_sso\.php$',
+        'info\.php$',
         'infophp\.php$',
+        'inputs\.php$',
         'old_phpinfo\.php$',
+        'password\.php$',
+        'php_info\.php$',
         'phpinfo\.php$',
         'phpversion\.php$',
         'pinfo\.php$',
         's_ne\.php$',
+        'shell\.php$',
+        'simple\.php$',
         'system\.php$',
         'timthumb\.php$',
-        'xleet\.php$',
+        'upload\.php$',
         'xleet-shell\.php$',
+        'xleet\.php$',
         'xleetshell\.php$',
         /* WordPress files */
         '^(wp-blog-header|wp-config|wp-config-sample|wp-load|wp-settings)\.php'
