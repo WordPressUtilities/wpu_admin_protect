@@ -5,7 +5,7 @@ Plugin Name: WPU Admin Protect
 Plugin URI: https://github.com/WordPressUtilities/wpu_admin_protect
 Update URI: https://github.com/WordPressUtilities/wpu_admin_protect
 Description: Restrictive options for WordPress admin
-Version: 2.3.2
+Version: 2.4.0
 Author: Darklg
 Author URI: https://darklg.me/
 Text Domain: wpu_admin_protect
@@ -35,7 +35,7 @@ if (defined('DISABLE_WPU_ADMIN_PROTECT') && DISABLE_WPU_ADMIN_PROTECT) {
   Levels
 ---------------------------------------------------------- */
 
-define('WPUTH_ADMIN_PLUGIN_VERSION', '2.3.1');
+define('WPUTH_ADMIN_PLUGIN_VERSION', '2.4.0');
 define('WPUTH_ADMIN_PLUGIN_NAME', 'WPU Admin Protect');
 define('WPUTH_ADMIN_PLUGIN_OPT', 'wpu_admin_protect__v');
 define('WPUTH_ADMIN_MIN_LVL', 'manage_categories');
@@ -337,11 +337,9 @@ function wputh_admin_protect_rewrite_rules($rules) {
         'README\.md$',
         'readme\.txt$',
         /* WordPress attacks */
-        '/admin\.php$',
         '/config\.php$',
         '/error\.php$',
         '/info\.php$',
-        'admin\.php$',
         'index_sso\.php$',
         'info\.php$',
         'infophp\.php$',
@@ -365,12 +363,39 @@ function wputh_admin_protect_rewrite_rules($rules) {
         '^(wp-blog-header|wp-config|wp-config-sample|wp-load|wp-settings)\.php'
     );
 
+    $excluded_files_root = array(
+        'admin\.php',
+        'config\.php',
+        'error\.php',
+        'index_sso\.php',
+        'info\.php',
+        'info\.php',
+        'infophp\.php',
+        'inputs\.php',
+        'old_phpinfo\.php',
+        'password\.php',
+        'php_info\.php',
+        'phpinfo\.php',
+        'phpversion\.php',
+        'pinfo\.php',
+        's_ne\.php',
+        'shell\.php',
+        'simple\.php',
+        'system\.php',
+        'timthumb\.php',
+        'upload\.php',
+        'xleet-shell\.php',
+        'xleet\.php',
+        'xleetshell\.php'
+    );
+
     if (function_exists('wputh_disable_comments_css') || function_exists('wputh_disable_comments_support')) {
         $excluded_files[] = 'wp-comments-post.php';
         $excluded_files[] = 'wp-trackback.php';
     }
 
     $excluded_files = apply_filters('wputh_admin_protect_rewrite_rules__excluded_files', $excluded_files);
+    $excluded_files_root = apply_filters('wputh_admin_protect_rewrite_rules__excluded_files_root', $excluded_files_root);
 
     $wpuadminrules = "<IfModule mod_rewrite.c>
 RewriteEngine On
@@ -401,6 +426,13 @@ Deny from all
         $wpuadminrules .= "\nRewriteRule ^" . $excluded_dir . " - [R=404,L]";
     }
     $wpuadminrules .= "
+</IfModule>";
+
+    $wpuadminrules .= "
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{REQUEST_URI} ^/(" . implode('|', $excluded_files_root) . ")
+    RewriteRule ^.*$ - [F]
 </IfModule>";
 
     $wpuadminrules .= "
