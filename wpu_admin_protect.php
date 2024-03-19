@@ -5,7 +5,7 @@ Plugin Name: WPU Admin Protect
 Plugin URI: https://github.com/WordPressUtilities/wpu_admin_protect
 Update URI: https://github.com/WordPressUtilities/wpu_admin_protect
 Description: Restrictive options for WordPress admin
-Version: 2.4.0
+Version: 3.0.0
 Author: Darklg
 Author URI: https://darklg.me/
 Text Domain: wpu_admin_protect
@@ -35,7 +35,7 @@ if (defined('DISABLE_WPU_ADMIN_PROTECT') && DISABLE_WPU_ADMIN_PROTECT) {
   Levels
 ---------------------------------------------------------- */
 
-define('WPUTH_ADMIN_PLUGIN_VERSION', '2.4.0');
+define('WPUTH_ADMIN_PLUGIN_VERSION', '3.0.0');
 define('WPUTH_ADMIN_PLUGIN_NAME', 'WPU Admin Protect');
 define('WPUTH_ADMIN_PLUGIN_OPT', 'wpu_admin_protect__v');
 define('WPUTH_ADMIN_MIN_LVL', 'manage_categories');
@@ -649,3 +649,32 @@ function wputh_admin_protect_deactivate() {
 'wputh_admin_protect_htaccess_file', $root_path . '.htaccess'
 'wputh_admin_protect_subfolders', array('wp-cms/')
  */
+
+if (defined('WP_CLI') && WP_CLI) {
+    WP_CLI::add_command('wpu-admin-protect-dump', function ($args = array()) {
+        echo wputh_admin_protect_rewrite_rules('');
+    }, array(
+        'shortdesc' => 'Dump WPU Admin protect rules',
+        'synopsis' => array()
+    ));
+    WP_CLI::add_command('wpu-admin-protect-update-rules', function ($args = array()) {
+        $new_rules = wputh_admin_protect_rewrite_rules('');
+        $ht = ABSPATH . '/.htaccess';
+        if (!is_readable($ht)) {
+            WP_CLI::error('htaccess file is not available');
+        }
+        $ht_content = file_get_contents($ht);
+
+        preg_match('/# BEGIN WPU Admin Protect(.*)# END WPU Admin Protect/isU', $ht_content, $matches);
+        if (!isset($matches[0]) || !$matches[0]) {
+            WP_CLI::error('htaccess file does not contains the rules');
+        }
+        $ht_content = str_replace($matches[0], $new_rules, $ht_content);
+        file_put_contents($ht, $ht_content);
+        WP_CLI::success('Rules have been updated');
+
+    }, array(
+        'shortdesc' => 'Update WPU Admin protect rules directly in the .htaccess file',
+        'synopsis' => array()
+    ));
+}
