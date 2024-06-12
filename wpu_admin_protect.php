@@ -5,7 +5,7 @@ Plugin Name: WPU Admin Protect
 Plugin URI: https://github.com/WordPressUtilities/wpu_admin_protect
 Update URI: https://github.com/WordPressUtilities/wpu_admin_protect
 Description: Restrictive options for WordPress admin
-Version: 3.0.3
+Version: 3.1.0
 Author: Darklg
 Author URI: https://darklg.me/
 Text Domain: wpu_admin_protect
@@ -35,7 +35,7 @@ if (defined('DISABLE_WPU_ADMIN_PROTECT') && DISABLE_WPU_ADMIN_PROTECT) {
   Levels
 ---------------------------------------------------------- */
 
-define('WPUTH_ADMIN_PLUGIN_VERSION', '3.0.3');
+define('WPUTH_ADMIN_PLUGIN_VERSION', '3.1.0');
 define('WPUTH_ADMIN_PLUGIN_NAME', 'WPU Admin Protect');
 define('WPUTH_ADMIN_PLUGIN_OPT', 'wpu_admin_protect__v');
 define('WPUTH_ADMIN_MIN_LVL', 'manage_categories');
@@ -62,7 +62,7 @@ class WPUTHAdminProtectBlockAdmin {
         $this->level_access_min_admin_access = apply_filters('wputh_admin_protect_block_admin__level_access_min_admin_access', WPUTH_ADMIN_MIN_LVL);
         $this->level_access_can_update = apply_filters('wputh_admin_protect_block_admin__level_access_can_update', WPUTH_ADMIN_MAX_LVL);
 
-        if (!apply_filters('wputh_admin_protect_block_admin__enabled', false)) {
+        if (apply_filters('wputh_admin_protect_block_admin__enabled', true)) {
             add_action('admin_init', array(&$this, 'wputh_block_admin'));
         }
         add_action('init', array(&$this, 'wputh_hide_errors'));
@@ -115,9 +115,7 @@ if (!defined('DISALLOW_FILE_MODS')) {
   Disable auto-update
 ---------------------------------------------------------- */
 
-$wputh_admin_protect_disable_update = apply_filters('wputh_admin_protect_disable_update', true);
-
-if ($wputh_admin_protect_disable_update) {
+if (apply_filters('wputh_admin_protect_disable_update', true)) {
 
     /* Auto updates */
     add_filter('automatic_updater_disabled', '__return_true');
@@ -471,7 +469,7 @@ Header always set X-XSS-Protection \"1; mode=block\"
 </IfModule>
 ";
 
-    if (!apply_filters('wputh_admin_protect_disallow_subfolder_admin', false)) {
+    if (apply_filters('wputh_admin_protect_disallow_subfolder_admin', true)) {
         $wpuadminrules .= "
 # Prevent admin in subfolder
 <IfModule mod_rewrite.c>
@@ -483,7 +481,7 @@ RewriteRule ^[^/]+/wp-admin/ - [R=404,L]
 ";
     }
 
-    if (!apply_filters('wputh_admin_protect_disallow_xframe_options', false)) {
+    if (apply_filters('wputh_admin_protect_disallow_xframe_options', true)) {
         $wpuadminrules .= "
 # Prevent external iframe embedding
 <IfModule mod_headers.c>
@@ -492,7 +490,7 @@ Header always set X-FRAME-OPTIONS \"SAMEORIGIN\"
 # End Prevent\n
 ";
     }
-    if (!apply_filters('wputh_admin_protect_disallow_style_css', false)) {
+    if (apply_filters('wputh_admin_protect_disallow_style_css', true)) {
         $wpuadminrules .= "
 # Avoid access to style.css file
 <IfModule mod_rewrite.c>
