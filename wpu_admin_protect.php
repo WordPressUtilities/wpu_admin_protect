@@ -5,7 +5,7 @@ Plugin Name: WPU Admin Protect
 Plugin URI: https://github.com/WordPressUtilities/wpu_admin_protect
 Update URI: https://github.com/WordPressUtilities/wpu_admin_protect
 Description: Restrictive options for WordPress admin
-Version: 3.2.0
+Version: 3.2.1
 Author: Darklg
 Author URI: https://darklg.me/
 Text Domain: wpu_admin_protect
@@ -35,7 +35,7 @@ if (defined('DISABLE_WPU_ADMIN_PROTECT') && DISABLE_WPU_ADMIN_PROTECT) {
   Levels
 ---------------------------------------------------------- */
 
-define('WPUTH_ADMIN_PLUGIN_VERSION', '3.2.0');
+define('WPUTH_ADMIN_PLUGIN_VERSION', '3.2.1');
 define('WPUTH_ADMIN_PLUGIN_NAME', 'WPU Admin Protect');
 define('WPUTH_ADMIN_PLUGIN_OPT', 'wpu_admin_protect__v');
 define('WPUTH_ADMIN_MIN_LVL', 'manage_categories');
@@ -339,6 +339,13 @@ function wputh_admin_protect_rewrite_rules($rules) {
         'readme\.txt$',
         /* WordPress attacks */
         '/config\.php$',
+        '/chosen\.php$',
+        '/radio\.php$',
+        '/autoload_classmap\.php$',
+        '/file\.php$',
+        '/alfa\.php$',
+        '/cong\.php$',
+        '/wp\.php$',
         '/error\.php$',
         'index_sso\.php$',
         'infophp\.php$',
