@@ -5,7 +5,7 @@ Plugin Name: WPU Admin Protect
 Plugin URI: https://github.com/WordPressUtilities/wpu_admin_protect
 Update URI: https://github.com/WordPressUtilities/wpu_admin_protect
 Description: Restrictive options for WordPress admin
-Version: 3.2.4
+Version: 3.2.5
 Author: Darklg
 Author URI: https://darklg.me/
 Text Domain: wpu_admin_protect
@@ -35,7 +35,7 @@ if (defined('DISABLE_WPU_ADMIN_PROTECT') && DISABLE_WPU_ADMIN_PROTECT) {
   Levels
 ---------------------------------------------------------- */
 
-define('WPUTH_ADMIN_PLUGIN_VERSION', '3.2.4');
+define('WPUTH_ADMIN_PLUGIN_VERSION', '3.2.5');
 define('WPUTH_ADMIN_PLUGIN_NAME', 'WPU Admin Protect');
 define('WPUTH_ADMIN_PLUGIN_OPT', 'wpu_admin_protect__v');
 define('WPUTH_ADMIN_MIN_LVL', 'manage_categories');
@@ -211,11 +211,13 @@ function wputh_admin_protect_rewrite_rules($rules) {
         '.env',
         '.vscode/',
         '__Additional/',
+        '_all_dbs/',
         '_ignition/',
         '_profiler/',
         'actuator/',
         'administrator/',
         'api/',
+        'api-docs/',
         'app/',
         'auth/',
         'backend/',
@@ -255,6 +257,7 @@ function wputh_admin_protect_rewrite_rules($rules) {
         'resolve',
         'server-status',
         'shell/',
+        'swagger/',
         'sql',
         'vendor/',
         'wp/',
@@ -359,6 +362,7 @@ function wputh_admin_protect_rewrite_rules($rules) {
         's_ne\.php$',
         'shell\.php$',
         'simple\.php$',
+        'swagger-ui\.html$',
         'system\.php$',
         'timthumb\.php$',
         'wp\.php$',
@@ -370,14 +374,33 @@ function wputh_admin_protect_rewrite_rules($rules) {
     );
 
     $excluded_files_root = array(
+        '0x\.php',
+        '1\.php',
+        '404\.php',
+        'abcd\.php',
+        'about\.php',
         'admin\.php',
+        'alfa\.php',
+        'alfanew\.php',
+        'atomlib\.php',
+        'autoload_classmap\.php',
+        'buy\.php',
+        'chosen\.php',
+        'classwithtostring\.php',
         'config\.php',
+        'cong\.php',
+        'css\.php',
+        'dropdown\.php',
         'error\.php',
         'index_sso\.php',
         'info\.php',
         'info\.php',
         'infophp\.php',
         'inputs\.php',
+        'install\.php',
+        'ioxi-o\.php',
+        'mail\.php',
+        'moon\.php',
         'old_phpinfo\.php',
         'password\.php',
         'php_info\.php',
@@ -392,7 +415,8 @@ function wputh_admin_protect_rewrite_rules($rules) {
         'upload\.php',
         'xleet-shell\.php',
         'xleet\.php',
-        'xleetshell\.php'
+        'xleetshell\.php',
+        'xmrlpc\.php',
     );
 
     if (function_exists('wputh_disable_comments_css') || function_exists('wputh_disable_comments_support')) {
