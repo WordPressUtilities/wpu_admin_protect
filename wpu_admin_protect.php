@@ -5,7 +5,7 @@ Plugin Name: WPU Admin Protect
 Plugin URI: https://github.com/WordPressUtilities/wpu_admin_protect
 Update URI: https://github.com/WordPressUtilities/wpu_admin_protect
 Description: Restrictive options for WordPress admin
-Version: 3.2.5
+Version: 3.2.6
 Author: Darklg
 Author URI: https://darklg.me/
 Text Domain: wpu_admin_protect
@@ -35,7 +35,7 @@ if (defined('DISABLE_WPU_ADMIN_PROTECT') && DISABLE_WPU_ADMIN_PROTECT) {
   Levels
 ---------------------------------------------------------- */
 
-define('WPUTH_ADMIN_PLUGIN_VERSION', '3.2.5');
+define('WPUTH_ADMIN_PLUGIN_VERSION', '3.2.6');
 define('WPUTH_ADMIN_PLUGIN_NAME', 'WPU Admin Protect');
 define('WPUTH_ADMIN_PLUGIN_OPT', 'wpu_admin_protect__v');
 define('WPUTH_ADMIN_MIN_LVL', 'manage_categories');
@@ -209,11 +209,13 @@ function wputh_admin_protect_rewrite_rules($rules) {
     $excluded_directories = array(
         '.aws/',
         '.env',
+        '.git',
         '.vscode/',
         '__Additional/',
         '_all_dbs/',
         '_ignition/',
         '_profiler/',
+        '@vite/',
         'actuator/',
         'administrator/',
         'api/',
@@ -332,6 +334,8 @@ function wputh_admin_protect_rewrite_rules($rules) {
         'composer\.lock$',
         'php\.ini',
         'phpunit\.xml$',
+        'swagger\.json$',
+        'swagger-ui\.html$',
         /* Infos */
         'changelog\.txt$',
         'license\.html$',
@@ -437,6 +441,9 @@ RewriteRule ^(.*)$ /index.php [R=404,L]
 # - Stop WordPress username enumeration vulnerability
 RewriteCond %{QUERY_STRING} author=d
 RewriteRule ^ /? [L,R=301]
+# - Prevent access to .git directories and files
+RewriteCond %{REQUEST_URI} \.git [NC]
+RewriteRule ^ - [R=404,L]
 # - Prevent access to some subdirectories
 RewriteRule ^.git - [F]
 # - Disable directory browsing
