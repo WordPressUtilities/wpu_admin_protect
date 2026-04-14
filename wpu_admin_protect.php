@@ -5,7 +5,7 @@ Plugin Name: WPU Admin Protect
 Plugin URI: https://github.com/WordPressUtilities/wpu_admin_protect
 Update URI: https://github.com/WordPressUtilities/wpu_admin_protect
 Description: Restrictive options for WordPress admin
-Version: 3.2.6
+Version: 3.3.0
 Author: Darklg
 Author URI: https://darklg.me/
 Text Domain: wpu_admin_protect
@@ -35,7 +35,7 @@ if (defined('DISABLE_WPU_ADMIN_PROTECT') && DISABLE_WPU_ADMIN_PROTECT) {
   Levels
 ---------------------------------------------------------- */
 
-define('WPUTH_ADMIN_PLUGIN_VERSION', '3.2.6');
+define('WPUTH_ADMIN_PLUGIN_VERSION', '3.3.0');
 define('WPUTH_ADMIN_PLUGIN_NAME', 'WPU Admin Protect');
 define('WPUTH_ADMIN_PLUGIN_OPT', 'wpu_admin_protect__v');
 define('WPUTH_ADMIN_MIN_LVL', 'manage_categories');
@@ -423,6 +423,16 @@ function wputh_admin_protect_rewrite_rules($rules) {
         'xmrlpc\.php',
     );
 
+    $excluded_query_strings = apply_filters('wputh_admin_protect_rewrite_rules__excluded_query_strings', array(
+        '(\s|%20|;)select(\s|%20)',
+        '(\s|%20|;)execute(\s|%20)',
+        '(\s|%20|;)prepare(\s|%20)',
+        '(\s|%20|;)drop(\s|%20)table',
+        '(\s|%20|;)union(\s|%20)all(\s|%20)select',
+        'base64_decode',
+        'base64_encode'
+    ));
+
     if (function_exists('wputh_disable_comments_css') || function_exists('wputh_disable_comments_support')) {
         $excluded_files[] = 'wp-comments-post.php';
         $excluded_files[] = 'wp-trackback.php';
@@ -499,6 +509,19 @@ RewriteRule wp-content/uploads/(.*\.php)$ - [R=404,L]
 RewriteCond %{QUERY_STRING} \=PHP[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12} [NC]
 RewriteRule .* - [F,L]
 </IfModule>";
+    if ($excluded_query_strings) {
+        $wpuadminrules .= "
+<IfModule mod_rewrite.c>
+# - Block suspicious query strings
+RewriteEngine On";
+        $last_index = count($excluded_query_strings) - 1;
+        foreach ($excluded_query_strings as $i => $qs_pattern) {
+            $flags = $i < $last_index ? ' [NC,OR]' : ' [NC]';
+            $wpuadminrules .= "\nRewriteCond %{QUERY_STRING} (" . $qs_pattern . ")" . $flags;
+        }
+        $wpuadminrules .= "\nRewriteRule ^ - [F,L]
+</IfModule>";
+    }
     $wpuadminrules .= "
 <IfModule mod_headers.c>
 # - Remove Server Signature
