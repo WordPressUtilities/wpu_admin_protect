@@ -5,7 +5,7 @@ Plugin Name: WPU Admin Protect
 Plugin URI: https://github.com/WordPressUtilities/wpu_admin_protect
 Update URI: https://github.com/WordPressUtilities/wpu_admin_protect
 Description: Restrictive options for WordPress admin
-Version: 3.3.0
+Version: 3.4.0
 Author: Darklg
 Author URI: https://darklg.me/
 Text Domain: wpu_admin_protect
@@ -35,7 +35,7 @@ if (defined('DISABLE_WPU_ADMIN_PROTECT') && DISABLE_WPU_ADMIN_PROTECT) {
   Levels
 ---------------------------------------------------------- */
 
-define('WPUTH_ADMIN_PLUGIN_VERSION', '3.3.0');
+define('WPUTH_ADMIN_PLUGIN_VERSION', '3.4.0');
 define('WPUTH_ADMIN_PLUGIN_NAME', 'WPU Admin Protect');
 define('WPUTH_ADMIN_PLUGIN_OPT', 'wpu_admin_protect__v');
 define('WPUTH_ADMIN_MIN_LVL', 'manage_categories');
@@ -424,13 +424,27 @@ function wputh_admin_protect_rewrite_rules($rules) {
     );
 
     $excluded_query_strings = apply_filters('wputh_admin_protect_rewrite_rules__excluded_query_strings', array(
-        '(\s|%20|;)select(\s|%20)',
-        '(\s|%20|;)execute(\s|%20)',
-        '(\s|%20|;)prepare(\s|%20)',
-        '(\s|%20|;)drop(\s|%20)table',
-        '(\s|%20|;)union(\s|%20)all(\s|%20)select',
+        '(\s|%20|%3B|;)(select|execute|prepare)(\s|%20)',
+        '(\s|%20|%3B|;)drop(\s|%20)table',
+        '(\s|%20|%3B|;)delete(\s|%20)from',
+        '(\s|%20|%3B|;)insert(\s|%20)into',
+        '(\s|%20|%3B|;)union(\s|%20)all(\s|%20)select',
+        '(<|%3C)(script|img|svg|iframe|object|embed|link|style)',
+        '(javascript:|vbscript:|data:)',
+        '(href|onfocus|onerror)(=|%3D)',
+        '(alert|eval|shell)(\(|%28)',
+        '(/|%2F)passwd',
         'base64_decode',
-        'base64_encode'
+        'base64_encode',
+        '(\s|%20)or(\s|%20).*=',
+        '(\s|%20)and(\s|%20)sleep',
+        '(\.\./|\.\.\\\\|%2e%2e%2f|%252e|%252f)',
+        '(php|expect|zip|data)://',
+        '/proc/self',
+        '(boot\.ini|win\.ini)',
+        '(%00|%2500)',
+        '(cmd\.exe|command\.com|powershell)',
+        '(\.exe|\.mdb|\.bat|\.cmd)(\s|%20|&|$)'
     ));
 
     if (function_exists('wputh_disable_comments_css') || function_exists('wputh_disable_comments_support')) {
