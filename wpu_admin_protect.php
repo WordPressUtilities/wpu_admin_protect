@@ -5,7 +5,7 @@ Plugin Name: WPU Admin Protect
 Plugin URI: https://github.com/WordPressUtilities/wpu_admin_protect
 Update URI: https://github.com/WordPressUtilities/wpu_admin_protect
 Description: Restrictive options for WordPress admin
-Version: 3.4.0
+Version: 3.4.1
 Author: Darklg
 Author URI: https://darklg.me/
 Text Domain: wpu_admin_protect
@@ -35,7 +35,7 @@ if (defined('DISABLE_WPU_ADMIN_PROTECT') && DISABLE_WPU_ADMIN_PROTECT) {
   Levels
 ---------------------------------------------------------- */
 
-define('WPUTH_ADMIN_PLUGIN_VERSION', '3.4.0');
+define('WPUTH_ADMIN_PLUGIN_VERSION', '3.4.1');
 define('WPUTH_ADMIN_PLUGIN_NAME', 'WPU Admin Protect');
 define('WPUTH_ADMIN_PLUGIN_OPT', 'wpu_admin_protect__v');
 define('WPUTH_ADMIN_MIN_LVL', 'manage_categories');
@@ -286,6 +286,7 @@ function wputh_admin_protect_rewrite_rules($rules) {
         'wp-includes/theme-compat',
         'wp-includes/widgets',
         'wp-content/upgrade',
+        'wp-content/upgrade-temp-backup',
         'wp-content/w3tc-config',
         'wp-content/wp-rocket-config'
     );
@@ -511,6 +512,9 @@ RewriteRule ^wp-includes/theme-compat/ - [R=404,L]
 # - Avoid access to PHP files in plugins
 <IfModule mod_rewrite.c>
 RewriteRule wp-content/([^/\.]*\.php)$ - [R=404,L]
+RewriteRule wp-content/cache/(.*\.php)$ - [R=404,L]
+RewriteRule wp-content/languages/(.*\.php)$ - [R=404,L]
+RewriteRule wp-content/upgrade/(.*\.php)$ - [R=404,L]
 RewriteRule wp-content/themes/(.*\.php)$ - [R=404,L]
 RewriteRule wp-content/plugins/(.*\.php)$ - [R=404,L]
 RewriteRule wp-content/mu-plugins/(.*\.php)$ - [R=404,L]
