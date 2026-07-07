@@ -5,7 +5,7 @@ Plugin Name: WPU Admin Protect
 Plugin URI: https://github.com/WordPressUtilities/wpu_admin_protect
 Update URI: https://github.com/WordPressUtilities/wpu_admin_protect
 Description: Restrictive options for WordPress admin
-Version: 3.4.1
+Version: 4.0.0
 Author: Darklg
 Author URI: https://darklg.me/
 Text Domain: wpu_admin_protect
@@ -35,7 +35,7 @@ if (defined('DISABLE_WPU_ADMIN_PROTECT') && DISABLE_WPU_ADMIN_PROTECT) {
   Levels
 ---------------------------------------------------------- */
 
-define('WPUTH_ADMIN_PLUGIN_VERSION', '3.4.1');
+define('WPUTH_ADMIN_PLUGIN_VERSION', '4.0.0');
 define('WPUTH_ADMIN_PLUGIN_NAME', 'WPU Admin Protect');
 define('WPUTH_ADMIN_PLUGIN_OPT', 'wpu_admin_protect__v');
 define('WPUTH_ADMIN_MIN_LVL', 'manage_categories');
@@ -207,10 +207,7 @@ add_filter('mod_rewrite_rules', 'wputh_admin_protect_rewrite_rules', 10, 1);
 function wputh_admin_protect_rewrite_rules($rules) {
 
     $excluded_directories = array(
-        '.aws/',
-        '.env',
         '.git',
-        '.vscode/',
         '__Additional/',
         '_all_dbs/',
         '_ignition/',
@@ -243,18 +240,12 @@ function wputh_admin_protect_rewrite_rules($rules) {
         'lib/',
         'login/',
         'myadmin/',
-        'MyAdmin/',
         'mysql-admin',
         'mysqladmin',
         'nagios/',
         'opt/',
         'owa/',
         'phpinfo',
-        'phpmy-admin',
-        'phpmy/',
-        'phpMyAdmin',
-        'phpmyadmin',
-        'phpunit/',
         'query',
         'resolve',
         'server-status',
@@ -293,6 +284,25 @@ function wputh_admin_protect_rewrite_rules($rules) {
 
     $excluded_directories = apply_filters('wputh_admin_protect_rewrite_rules__excluded_directories', $excluded_directories);
 
+    /* Directories blocked at any depth (regex, dots escaped, must be slash-bounded to avoid false positives) */
+    $excluded_sub_directories = array(
+        '\.aws',
+        '\.env',
+        '\.git',
+        '\.ssh',
+        '\.vscode/',
+        'backup/',
+        'backups/',
+        'phpmy-admin',
+        'phpmy/',
+        'phpmyadmin',
+        'tests/config',
+        'dependencies/',
+        'phpunit/'
+    );
+
+    $excluded_sub_directories = apply_filters('wputh_admin_protect_rewrite_rules__excluded_sub_directories', $excluded_sub_directories);
+
     $excluded_extensions = array(
         'bak',
         'bak\.php',
@@ -324,6 +334,14 @@ function wputh_admin_protect_rewrite_rules($rules) {
         '^.git',
         '^.gitignore',
         '^.gitmodules',
+        /* SSH keys */
+        'id_rsa',
+        'id_dsa',
+        'id_ecdsa',
+        'id_ed25519',
+        '\.ppk$',
+        'authorized_keys',
+        'known_hosts',
         /* Project */
         'gulpfile\.js',
         'Gruntfile\.js',
@@ -335,6 +353,7 @@ function wputh_admin_protect_rewrite_rules($rules) {
         'composer\.lock$',
         'php\.ini',
         'phpunit\.xml$',
+        'swagger\.js$',
         'swagger\.json$',
         'swagger-ui\.html$',
         /* Infos */
@@ -348,7 +367,11 @@ function wputh_admin_protect_rewrite_rules($rules) {
         /* WordPress attacks */
         '^file\.php$',
         'alfa\.php$',
+        'alfanew\.php$',
         'autoload_classmap\.php$',
+        'ioxi-o\.php$',
+        'moon\.php$',
+        'xmrlpc\.php$',
         'chosen\.php$',
         'classwithtostring\.php$',
         'config\.php$',
@@ -375,20 +398,18 @@ function wputh_admin_protect_rewrite_rules($rules) {
         'xleet\.php$',
         'xleetshell\.php$',
         /* WordPress files */
-        '^(wp-blog-header|wp-config|wp-config-sample|wp-load|wp-settings)\.php'
-    );
-
-    $excluded_files_root = array(
+        '^(wp-blog-header|wp-config|wp-config-sample|wp-load|wp-settings)\.php',
         '0x\.php',
         '1\.php',
         '404\.php',
         'abcd\.php',
+    );
+
+    $excluded_files_root = array(
         'about\.php',
         'admin\.php',
         'alfa\.php',
-        'alfanew\.php',
         'atomlib\.php',
-        'autoload_classmap\.php',
         'buy\.php',
         'chosen\.php',
         'classwithtostring\.php',
@@ -399,14 +420,10 @@ function wputh_admin_protect_rewrite_rules($rules) {
         'error\.php',
         'index_sso\.php',
         'info\.php',
-        'info\.php',
         'infophp\.php',
         'inputs\.php',
         'install\.php',
-        'ioxi-o\.php',
         'mail\.php',
-        'moon\.php',
-        'old_phpinfo\.php',
         'password\.php',
         'php_info\.php',
         'phpinfo\.php',
@@ -418,10 +435,6 @@ function wputh_admin_protect_rewrite_rules($rules) {
         'system\.php',
         'timthumb\.php',
         'upload\.php',
-        'xleet-shell\.php',
-        'xleet\.php',
-        'xleetshell\.php',
-        'xmrlpc\.php',
     );
 
     $excluded_query_strings = apply_filters('wputh_admin_protect_rewrite_rules__excluded_query_strings', array(
@@ -466,11 +479,9 @@ RewriteRule ^(.*)$ /index.php [R=404,L]
 # - Stop WordPress username enumeration vulnerability
 RewriteCond %{QUERY_STRING} author=d
 RewriteRule ^ /? [L,R=301]
-# - Prevent access to .git directories and files
-RewriteCond %{REQUEST_URI} \.git [NC]
+# - Prevent access to sensitive dirs at any depth
+RewriteCond %{REQUEST_URI} (^|/)(" . implode('|', $excluded_sub_directories) . ") [NC]
 RewriteRule ^ - [R=404,L]
-# - Prevent access to some subdirectories
-RewriteRule ^.git - [F]
 # - Disable directory browsing
 Options All -Indexes
 IndexIgnore *
@@ -483,9 +494,11 @@ RewriteRule ^.*\.(" . implode('|', $excluded_extensions) . ")$ - [F,L,NC]
 # - Protect files
 <FilesMatch (" . implode('|', $excluded_files) . ")>
 Deny from all
-</FilesMatch>";
+</FilesMatch>
+# - Protect files even if they do not exist (URI-based)
+RewriteRule (^|/)(" . str_replace('^', '', implode('|', $excluded_files)) . ") - [F,L,NC]";
     foreach ($excluded_directories as $excluded_dir) {
-        $wpuadminrules .= "\nRewriteRule ^" . $excluded_dir . " - [R=404,L]";
+        $wpuadminrules .= "\nRewriteRule ^" . $excluded_dir . " - [R=404,L,NC]";
     }
     $wpuadminrules .= "
 </IfModule>";
