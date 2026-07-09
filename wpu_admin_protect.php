@@ -5,7 +5,7 @@ Plugin Name: WPU Admin Protect
 Plugin URI: https://github.com/WordPressUtilities/wpu_admin_protect
 Update URI: https://github.com/WordPressUtilities/wpu_admin_protect
 Description: Restrictive options for WordPress admin
-Version: 4.0.0
+Version: 4.0.1
 Author: Darklg
 Author URI: https://darklg.me/
 Text Domain: wpu_admin_protect
@@ -35,7 +35,7 @@ if (defined('DISABLE_WPU_ADMIN_PROTECT') && DISABLE_WPU_ADMIN_PROTECT) {
   Levels
 ---------------------------------------------------------- */
 
-define('WPUTH_ADMIN_PLUGIN_VERSION', '4.0.0');
+define('WPUTH_ADMIN_PLUGIN_VERSION', '4.0.1');
 define('WPUTH_ADMIN_PLUGIN_NAME', 'WPU Admin Protect');
 define('WPUTH_ADMIN_PLUGIN_OPT', 'wpu_admin_protect__v');
 define('WPUTH_ADMIN_MIN_LVL', 'manage_categories');
@@ -761,7 +761,11 @@ if (defined('WP_CLI') && WP_CLI) {
 
         preg_match('/# BEGIN WPU Admin Protect(.*)# END WPU Admin Protect/isU', $ht_content, $matches);
         if (!isset($matches[0]) || !$matches[0]) {
-            WP_CLI::error('htaccess file does not contains the rules');
+            WP_CLI::confirm('htaccess file does not contain the rules. Inject them at the top of the file?');
+            $ht_content = $new_rules . "\n" . $ht_content;
+            file_put_contents($ht, $ht_content);
+            WP_CLI::success('Rules have been injected');
+            return;
         }
         $ht_content = str_replace($matches[0], $new_rules, $ht_content);
         file_put_contents($ht, $ht_content);
