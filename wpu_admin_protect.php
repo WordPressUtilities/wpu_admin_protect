@@ -5,7 +5,7 @@ Plugin Name: WPU Admin Protect
 Plugin URI: https://github.com/WordPressUtilities/wpu_admin_protect
 Update URI: https://github.com/WordPressUtilities/wpu_admin_protect
 Description: Restrictive options for WordPress admin
-Version: 4.0.1
+Version: 4.1.0
 Author: Darklg
 Author URI: https://darklg.me/
 Text Domain: wpu_admin_protect
@@ -35,7 +35,7 @@ if (defined('DISABLE_WPU_ADMIN_PROTECT') && DISABLE_WPU_ADMIN_PROTECT) {
   Levels
 ---------------------------------------------------------- */
 
-define('WPUTH_ADMIN_PLUGIN_VERSION', '4.0.1');
+define('WPUTH_ADMIN_PLUGIN_VERSION', '4.1.0');
 define('WPUTH_ADMIN_PLUGIN_NAME', 'WPU Admin Protect');
 define('WPUTH_ADMIN_PLUGIN_OPT', 'wpu_admin_protect__v');
 define('WPUTH_ADMIN_MIN_LVL', 'manage_categories');
@@ -398,7 +398,7 @@ function wputh_admin_protect_rewrite_rules($rules) {
         'xleet\.php$',
         'xleetshell\.php$',
         /* WordPress files */
-        '^(wp-blog-header|wp-config|wp-config-sample|wp-load|wp-settings)\.php',
+        '^(wp-blog-header|wp-config|wp-config-sample|wp-load|wp-settings|wp-links-opml)\.php',
         '0x\.php',
         '1\.php',
         '404\.php',
@@ -593,6 +593,17 @@ Header always set X-FRAME-OPTIONS \"SAMEORIGIN\"
 RewriteRule wp-content/themes/(.*)/style.css$ - [R=404,L]
 </IfModule>
 # END Avoid access to style.css file\n
+";
+    }
+
+    if (apply_filters('wputh_admin_protect_disallow_themes_browsing', true)) {
+        $wpuadminrules .= "
+# Avoid access to non-existing files in themes
+<IfModule mod_rewrite.c>
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule wp-content/themes/ - [R=404,L]
+</IfModule>
+# END Avoid access to non-existing files in themes\n
 ";
     }
 
