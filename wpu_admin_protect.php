@@ -5,7 +5,7 @@ Plugin Name: WPU Admin Protect
 Plugin URI: https://github.com/WordPressUtilities/wpu_admin_protect
 Update URI: https://github.com/WordPressUtilities/wpu_admin_protect
 Description: Restrictive options for WordPress admin
-Version: 4.1.0
+Version: 4.2.0
 Author: Darklg
 Author URI: https://darklg.me/
 Text Domain: wpu_admin_protect
@@ -35,7 +35,7 @@ if (defined('DISABLE_WPU_ADMIN_PROTECT') && DISABLE_WPU_ADMIN_PROTECT) {
   Levels
 ---------------------------------------------------------- */
 
-define('WPUTH_ADMIN_PLUGIN_VERSION', '4.1.0');
+define('WPUTH_ADMIN_PLUGIN_VERSION', '4.2.0');
 define('WPUTH_ADMIN_PLUGIN_NAME', 'WPU Admin Protect');
 define('WPUTH_ADMIN_PLUGIN_OPT', 'wpu_admin_protect__v');
 define('WPUTH_ADMIN_MIN_LVL', 'manage_categories');
@@ -497,9 +497,10 @@ Deny from all
 </FilesMatch>
 # - Protect files even if they do not exist (URI-based)
 RewriteRule (^|/)(" . str_replace('^', '', implode('|', $excluded_files)) . ") - [F,L,NC]";
-    foreach ($excluded_directories as $excluded_dir) {
-        $wpuadminrules .= "\nRewriteRule ^" . $excluded_dir . " - [R=404,L,NC]";
-    }
+    $wpuadminrules .= "
+# - Protect directories at root level
+RewriteCond %{REQUEST_URI} ^/(" . implode('|', $excluded_directories) . ") [NC]
+RewriteRule ^ - [R=404,L]";
     $wpuadminrules .= "
 </IfModule>";
 
@@ -515,11 +516,11 @@ RewriteRule (^|/)(" . str_replace('^', '', implode('|', $excluded_files)) . ") -
 <IfModule mod_rewrite.c>
 RewriteEngine On
 RewriteBase /
-RewriteRule ^wp-admin/includes/ - [R=404,L]
-RewriteRule !^wp-includes/ - [S=3]
-RewriteRule ^wp-includes/[^/]+\.php$ - [R=404,L]
-RewriteRule ^wp-includes/js/tinymce/langs/.+\.php - [R=404,L]
-RewriteRule ^wp-includes/theme-compat/ - [R=404,L]
+RewriteCond %{REQUEST_URI} ^/wp-admin/includes/ [NC,OR]
+RewriteCond %{REQUEST_URI} ^/wp-includes/[^/]+\.php$ [NC,OR]
+RewriteCond %{REQUEST_URI} ^/wp-includes/js/tinymce/langs/.+\.php [NC,OR]
+RewriteCond %{REQUEST_URI} ^/wp-includes/theme-compat/ [NC]
+RewriteRule ^ - [R=404,L]
 </IfModule>";
     $wpuadminrules .= "
 # - Avoid access to PHP files in plugins
@@ -571,7 +572,8 @@ Header always set X-XSS-Protection \"1; mode=block\"
 <IfModule mod_rewrite.c>
 RewriteEngine On
 RewriteBase /
-RewriteRule ^[^/]+/wp-admin/ - [R=404,L]
+RewriteCond %{REQUEST_URI} ^/[^/]+/wp-admin/ [NC]
+RewriteRule ^ - [R=404,L]
 </IfModule>
 # End Prevent\n
 ";
